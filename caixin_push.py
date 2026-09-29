@@ -3,12 +3,16 @@
 """
 财新网「世界」频道 → 手机推送（一体化脚本，无需任何第三方库）
 
-本地测试：
-    set BARK_URL=https://api.day.app/你的KEY
-    python caixin_push.py
+手机推送地址有两种填法，任选一种：
+  方法A（简单）：把地址填到下面 MY_BARK_URL 的引号里，然后什么都不用管。
+  方法B：留空，改由 GitHub 的 Secret（名字固定为 BARK_URL）提供。
 
-云端使用：由 GitHub Actions 每天定时调用，BARK_URL 从仓库 Secret 读取。
+本地测试：直接运行 python caixin_push.py 即可。
 """
+
+# ===== 只需要改这一行：把 Bark 地址填进引号里，例如 "https://api.day.app/abcd1234" =====
+MY_BARK_URL = ""
+# ==============================================================================
 
 import html
 import json
@@ -17,6 +21,7 @@ import re
 import sys
 import urllib.request
 from datetime import datetime, timedelta
+
 
 CHANNEL_URL = "https://international.caixin.com/"
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -94,12 +99,12 @@ def build_message(items, hours=24, now=None):
 
 
 def push_bark(text, title="财新 · 世界频道早报"):
-    url = (os.environ.get("BARK_URL") or "").strip().rstrip("/")
+    url = (MY_BARK_URL.strip() or os.environ.get("BARK_URL") or "").strip().rstrip("/")
     if not url:
-        print("没有配置 BARK_URL，本次只打印内容、不推送。", file=sys.stderr)
+        print("没有配置推送地址，本次只打印内容、不推送。", file=sys.stderr)
         return False
     body = text if len(text) <= 3000 else text[:3000] + "\n…（已截断）"
-    payload = {"title": title, "body": body, "markdown": "1",
+    payload = {"title": title, "body": body,
                "group": "财新早报", "sound": "bell"}
     req = urllib.request.Request(
         url, data=json.dumps(payload).encode("utf-8"),
