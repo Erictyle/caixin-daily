@@ -1,14 +1,19 @@
 name: caixin-daily
+
+# 每天 UTC 00:00 运行 = 北京时间 08:00
+# 高峰期 GitHub 可能延迟几分钟到十几分钟触发，属正常现象。
 on:
-schedule:
-- cron: "0 0 * * *"
-workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:      # 允许在网页上手动点一下立即测试
+
 jobs:
-push:
-runs-on: ubuntu-latest
-steps:
-- uses: actions/checkout@v4
-- name: push
-env:
-BARK_URL: ${{ secrets.BARK_URL }}
-run: python3 caixin_push.py
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 抓取财新世界频道并推送到手机
+        env:
+          BARK_URL: ${{ secrets.BARK_URL }}
+        run: python3 caixin_push.py
